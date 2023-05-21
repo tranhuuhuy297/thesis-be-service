@@ -1,16 +1,15 @@
-import pymongo
 import datetime
 import threading
-
 from copy import deepcopy
+
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
+from pymongo.errors import DuplicateKeyError
 
-
-from endpoint import mongo
+from util.config_util import MONGO
+from util.error_util import Error
 from util.logger_util import logger
 from util.time_util import now
-from util.error_util import Error
 
 
 class Singleton(type):
@@ -28,7 +27,7 @@ class Singleton(type):
 
 class BaseMongoModel(object, metaclass=Singleton):
     def __init__(self, db, collection):
-        self.db = mongo[db]
+        self.db = MONGO[db]
         self.collection = self.db[collection]
 
     def convert_fields(self, item):
@@ -58,13 +57,20 @@ class BaseMongoModel(object, metaclass=Singleton):
                 return item, 0, 'Create item successfully'
             else:
                 return None, Error.ERROR_CODE_CREATED_FAILED, Error.ERROR_MESSAGE_CREATED_FAILED
+        except DuplicateKeyError as e:
+            logger.error('Duplicate error', exc_info=True)
+            return None, Error.ERROR_CODE_CREATED_FAILED, 'duplicated'
         except Exception as e:
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_CREATED_FAILED, e
 
-    def get(self, id):
+    def count(self, _filter):
+        return self.collection.count_documents(_filter)
+
+    def get(self, id, _filter={}):
         try:
-            _filter = {'_id': ObjectId(id)}
+            if id is not None:
+                _filter = {'_id': ObjectId(id)}
 
             item = self.collection.find_one(_filter)
             if item:
@@ -75,6 +81,27 @@ class BaseMongoModel(object, metaclass=Singleton):
         except InvalidId as invalid_id_err:
             logger.error(invalid_id_err, exc_info=True)
             return None, Error.ERROR_CODE_GOT_FAILED, Error.ERROR_MESSAGE_GOT_FAILED
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return None, Error.ERROR_CODE_GOT_FAILED, e
+
+    def get_many(self, _filter={}, page=0, size=10, order_by='update_time', order=-1):
+        try:
+            items = []
+            skip = page * size
+
+            cursor = self.collection.find(
+                filter=_filter, limit=size, skip=skip
+            ).sort(order_by, int(order))
+
+            for item in cursor:
+                item = self.convert_fields(item)
+                items.append(item)
+
+            return items, 0, 'Get items successfully'
+        except InvalidId as invalid_id_err:
+            logger.error(invalid_id_err, exc_info=True)
+            return None, Error.ERROR_CODE_GOT_FAILED, str(invalid_id_err)
         except Exception as e:
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_FAILED, e

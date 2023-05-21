@@ -1,3 +1,10 @@
 *.pyc
+.vscode
+
+# config.ini
+
 test*
 test.py
+text.txt
+sentences.txt
+faiss.index

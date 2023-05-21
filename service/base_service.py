@@ -1,9 +1,11 @@
-import bson
 import threading
 
-from util.logger_util import logger
-from util.error_util import Error
+import bson
+import pymongo
+
 from model.base_mongodb import BaseMongoModel
+from util.error_util import Error
+from util.logger_util import logger
 
 
 class Singleton(type):
@@ -29,28 +31,23 @@ class BaseService(object, metaclass=Singleton):
     def create(self, data):
         try:
             item, code, msg = self.build_item(data)
+            if item is None:
+                return None, code, msg
             logger.debug(f'Build item: {msg}\n{item}')
-            build_item, code, msg = self.model.create(item)
-            return build_item, code, msg
+            created_item, code, msg = self.model.create(item)
+            return created_item, code, msg
         except Exception as e:
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_EXCEPTION, e
 
-    def get_paging_data(self, _filter={}):
-        size = int(_filter.get("size", 10))
-        page = int(_filter.get("page", 0))
-        skip = page * size
-
-        return size, skip
-
     def get_extra_info(self, id, item):
         return item
 
-    def get(self, id, deep=False):
+    def get(self, id, _filter={}, deep=False):
         try:
-            item, code, msg = self.model.get(id)
+            item, code, msg = self.model.get(id, _filter=_filter)
             if not item:
-                return None, Error.ERROR_CODE_GET_NO_SUCH_ITEM, Error.ERROR_MESSAGE_GET_NO_SUCH_ITEM
+                return None, Error.ERROR_CODE_GOT_NO_SUCH_ITEM, Error.ERROR_MESSAGE_GOT_NO_SUCH_ITEM
             if deep:
                 item = self.get_extra_info(id, item)
             return item, code, msg
@@ -58,18 +55,26 @@ class BaseService(object, metaclass=Singleton):
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_EXCEPTION, e
 
-    def get_list(self, _filter):
-        pass
+    def get_list(self, _filter, page=0, size=10, order_by='update_time', order=-1):
+        try:
 
-    def build_update_item(self, id, update_item):
+            items, code, msg = self.model.get_many(
+                _filter=_filter, page=page, size=size, order_by=order_by, order=order)
+
+            return items, code, msg
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return None, 0, Error.ERROR_CODE_GOT_EXCEPTION, e
+
+    def build_update_item(self, update_item):
         return update_item, 0, 'Item is validated'
 
     def update(self, id, data):
         try:
             data.pop('create_time', None)
             data.pop('update_time', None)
-            item, code, msg = self.build_update_item(id, data)
-            if not item:
+            item, code, msg = self.build_update_item(data)
+            if item is None:
                 return None, code, msg
             item = {k: v for k, v in item.items() if v is not None}
 

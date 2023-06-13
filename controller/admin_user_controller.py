@@ -33,7 +33,7 @@ def update_user(user_id: str, user: User):
     return result, code, msg
 
 
-@api.post('/user', dependencies=[Depends(JWTBearer(check_admin=True))])
+@api.post('/user')
 @wrap_response
 def create_user(user: User):
     result, code, msg = user_service.create(data=user.dict())

@@ -10,12 +10,6 @@ class UserService(BaseService):
         super().__init__(UserModel())
         self.s3_photo = S3(bucket_name='image')
 
-    def build_item(self, item):
-        password = item.get('password', '')
-        password = encode_sha256(password)
-
-        return {**item, 'password': password}, 0, 'validate'
-
     def build_update_item(self, update_item):
         # password = update_item.get('password', '')
         # password = encode_sha256(password)

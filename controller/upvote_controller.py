@@ -14,6 +14,12 @@ class Upvote(BaseModel):
     prompt_id: str
 
 
+@api.get('/upvote')
+def get_upvote(user_id: str, prompt_id: str):
+    result, code, msg = upvote_service.get(None, {'user_id': user_id, 'prompt_id': prompt_id})
+    return result, code, msg
+
+
 @api.post('/upvote', dependencies=[Depends(JWTBearer())])
 @wrap_response
 def create_upvote(upvote: Upvote):
@@ -21,8 +27,12 @@ def create_upvote(upvote: Upvote):
     return result, code, msg
 
 
-@api.delete('/upvote/{upvote_id}', dependencies=[Depends(JWTBearer())])
+@api.delete('/upvote', dependencies=[Depends(JWTBearer())])
 @wrap_response
-def delete_upvote(upvote_id: str):
-    result, code, msg = upvote_service.delete(upvote_id)
+def delete_upvote(upvote: Upvote):
+    upvote, _, _ = upvote_service.get(None, upvote.dict())
+    if upvote is None:
+        return None, -1, 'not exist'
+    result, code, msg = upvote_service.delete(upvote.get('id', ''))
+
     return result, code, msg

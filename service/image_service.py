@@ -1,6 +1,7 @@
 from model.image_model import ImageModel
 from service.base_service import BaseService
 from service.prompt_service import PromptService
+from service.upvote_service import UpvoteService
 from service.user_service import UserService
 from util.s3_util import S3
 from util.time_util import get_time_string
@@ -35,3 +36,20 @@ class ImageService(BaseService):
             'prompt_id': prompt_id,
             'image_src': image_src,
         }, 0, 'valid'
+
+    def get_extra_info(self, item):
+        prompt_id = item.get('prompt_id', '')
+        user_id = item.get('user_id', '')
+        prompt, _, _ = PromptService().get(prompt_id, _filter={'user_id': user_id})
+        user, _, _ = UserService().get(user_id)
+        if not prompt or not user:
+            return None
+
+        upvote, _, _ = UpvoteService().get(None, {'user_id': user_id, 'prompt_id': prompt_id})
+
+        return {**item,
+                'is_upvote': bool(upvote),
+                'user_gmail': user.get('gmail', ''),
+                'prompt_id': prompt.get('id', ''),
+                'prompt': prompt.get('prompt', ''),
+                'negative_prompt': prompt.get('negative_prompt', '')}

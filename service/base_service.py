@@ -40,7 +40,7 @@ class BaseService(object, metaclass=Singleton):
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_EXCEPTION, e
 
-    def get_extra_info(self, id, item):
+    def get_extra_info(self, item):
         return item
 
     def get(self, id, _filter={}, deep=False):
@@ -49,17 +49,19 @@ class BaseService(object, metaclass=Singleton):
             if not item:
                 return None, Error.ERROR_CODE_GOT_NO_SUCH_ITEM, Error.ERROR_MESSAGE_GOT_NO_SUCH_ITEM
             if deep:
-                item = self.get_extra_info(id, item)
+                item = self.get_extra_info(item)
             return item, code, msg
         except Exception as e:
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_EXCEPTION, e
 
-    def get_list(self, _filter, page=0, size=10, order_by='update_time', order=-1):
+    def get_list(self, _filter, page=0, size=10, order_by='update_time', order=-1, deep=False):
         try:
 
             items, code, msg = self.model.get_many(
                 _filter=_filter, page=page, size=size, order_by=order_by, order=order)
+            if deep:
+                items = [self.get_extra_info(item) for item in items]
 
             return items, code, msg
         except Exception as e:
@@ -91,8 +93,7 @@ class BaseService(object, metaclass=Singleton):
         try:
             delete_count, code, msg = self.model.delete(id)
             if delete_count:
-                item, _, _ = self.get(id)
-                return item, code, msg
+                return id, code, msg
             return None, -1, 'None of item was deleted'
         except Exception as e:
             logger.error(e, exc_info=True)

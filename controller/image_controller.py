@@ -13,19 +13,19 @@ MAX_IMAGE = 1
 
 @api.get('/image')
 @wrap_response
-def get_list_image(page: int = 0, size: int = 20):
-    result, code, msg = image_service.get_list({}, page, size, deep=True)
+def get_list_image(user_id: str = None, page: int = 0, size: int = 20):
+    result, code, msg = image_service.get_list({'user_id': user_id}, page, size, deep=True)
     return result, code, msg
 
 
-@api.delete('/image/{image_id}')
+@api.delete('/image/{image_id}', dependencies=[Depends(JWTBearer())])
 @wrap_response
 def delete_image(image_id: str):
     result, code, msg = image_service.delete(image_id)
     return result, code, msg
 
 
-@api.post('/image')
+@api.post('/image', dependencies=[Depends(JWTBearer())])
 @wrap_response
 def create_image(user_id: str = Form(...),
                  prompt_id: str = Form(...),
@@ -34,11 +34,4 @@ def create_image(user_id: str = Form(...),
         'user_id': user_id, 'prompt_id': prompt_id, 'image': image
     })
 
-    return result, code, msg
-
-
-@api.get('/image/user/{user_id}')
-@wrap_response
-def get_list_image_by_user(user_id: str, page: int = 0, size: int = 20):
-    result, code, msg = image_service.get_list({'user_id': user_id}, page, size, deep=True)
     return result, code, msg

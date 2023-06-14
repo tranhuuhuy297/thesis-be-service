@@ -1,4 +1,5 @@
 from model.image_model import ImageModel
+from model.upvote_model import UpvoteModel
 from service.base_service import BaseService
 from service.prompt_service import PromptService
 from service.upvote_service import UpvoteService
@@ -42,13 +43,13 @@ class ImageService(BaseService):
         user_id = item.get('user_id', '')
         prompt, _, _ = PromptService().get(prompt_id, _filter={'user_id': user_id})
         user, _, _ = UserService().get(user_id)
-        if not prompt or not user:
-            return None
 
         upvote, _, _ = UpvoteService().get(None, {'user_id': user_id, 'prompt_id': prompt_id})
+        count_upvote = UpvoteModel().count({'prompt_id': prompt_id})
 
         return {**item,
                 'is_upvote': bool(upvote),
+                'count_upvote': count_upvote,
                 'user_gmail': user.get('gmail', ''),
                 'prompt_id': prompt.get('id', ''),
                 'prompt': prompt.get('prompt', ''),

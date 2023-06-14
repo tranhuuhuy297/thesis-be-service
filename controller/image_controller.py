@@ -14,7 +14,10 @@ MAX_IMAGE = 1
 @api.get('/image')
 @wrap_response
 def get_list_image(user_id: str = None, page: int = 0, size: int = 20):
-    result, code, msg = image_service.get_list({'user_id': user_id}, page, size, deep=True)
+    _filter = {}
+    if user_id != None:
+        _filter['user_id'] = user_id
+    result, code, msg = image_service.get_list(_filter, page, size, deep=True)
     return result, code, msg
 
 

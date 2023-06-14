@@ -6,9 +6,11 @@ from pydantic import BaseModel
 from service.prompt_service import PromptService
 from util.token_util import JWTBearer
 from util.wrap_util import wrap_response
+from util.pinecone import Pinecone
 
 api = APIRouter()
 prompt_service = PromptService()
+pinecone = Pinecone()
 
 
 class Prompt(BaseModel):
@@ -52,3 +54,10 @@ def delete_prompt(prompt_id: str):
 def create_prompt(prompt: Prompt):
     result, code, msg = prompt_service.create(prompt.dict())
     return result, code, msg
+
+
+@api.get('/semantic-search')
+@wrap_response
+def search_semantic(query: str):
+    result = pinecone.query(query)
+    return result, 0, 'success'

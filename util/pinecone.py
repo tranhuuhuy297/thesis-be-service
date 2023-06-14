@@ -1,3 +1,4 @@
+import json
 import pinecone
 from sentence_transformers import SentenceTransformer
 
@@ -28,7 +29,8 @@ class Pinecone:
 
     def query(self, query, top_k=100):
         embed = model.encode(query).tolist()
-        return self.index.query(embed, top_k=top_k, include_metadata=True, namespace=self.namespace)
+        result = self.index.query(embed, top_k=top_k, include_metadata=True, namespace=self.namespace)
+        return result.to_dict()['matches']
 
     def delete(self, list_id=[], delete_all=False):
         num_delete = self.index.delete(list_id, deleteAll=delete_all, namespace=self.namespace)

@@ -8,3 +8,4 @@ test.py
 text.txt
 sentences.txt
 faiss.index
+.env

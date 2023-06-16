@@ -1,6 +1,6 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, Form
 from pydantic import BaseModel
 
 from service.builder_service import BuilderTypeService, BuilderValueService
@@ -46,15 +46,15 @@ def delete_builder_type(builder_type_id: str):
 
 @api.get('/builder_value')
 @wrap_response
-def get_list_builder_value(builder_type_name: str = 'Album Cover', page: int = 0, size: int = 100):
-    _filter = {'parent': builder_type_name}
+def get_list_builder_value(builder_type: str = 'Layouts', page: int = 0, size: int = 100):
+    _filter = {'parent': builder_type}
     result, code, msg = BuilderValueService().get_list(_filter, page, size)
     return result, code, msg
 
 
 @api.post('/builder_value')
 @wrap_response
-def create_builder_value(image: UploadFile, parent: str, name: str):
+def create_builder_value(image: UploadFile = Form(...), parent: str = Form(...), name: str = Form(...)):
     result, code, msg = BuilderValueService().create({'parent': parent.title(), 'name': name.title(), 'image': image})
     return result, code, msg
 

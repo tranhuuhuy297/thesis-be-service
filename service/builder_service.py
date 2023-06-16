@@ -23,9 +23,8 @@ class BuilderValueService(BaseService):
         image = item.pop('image', None)
         if image is None:
             return None, -1, 'invalid image'
-        if not self.s3_photo.put_object(image.file, f'builder/{parent}/{name}'):
-            return None, -1, 'upload image fail'
+        self.s3_photo.put_object(image.file, f'builder/{parent}/{name}')
 
-        item['image_src'] = f'{self.s3_photo.bucket_name}.s3.{self.s3_photo.region}.amazonaws.com/builder/{parent}/{name}'
+        item['image_src'] = f'{self.s3_photo.bucket_name}.s3.{self.s3_photo.region_name}.amazonaws.com/builder/{parent}/{name}'
 
         return super().build_item(item)

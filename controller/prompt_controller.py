@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from service.prompt_service import PromptService
 from util.token_util import JWTBearer
-from util.wrap_util import wrap_response
+from util.wrap_util import wrap_get_list_response, wrap_response
 from util.pinecone import Pinecone
 
 api = APIRouter()
@@ -20,19 +20,19 @@ class Prompt(BaseModel):
 
 
 @api.get('/prompt')
-@wrap_response
+@wrap_get_list_response
 def get_list_prompt(search: str = '', page: int = 0, size: int = 10):
     _filter = {'prompt': re.compile(search, re.IGNORECASE)}
-    result, code, msg = prompt_service.get_list(_filter, page, size)
-    return result, code, msg
+    result, count, code, msg = prompt_service.get_list(_filter, page, size)
+    return result, count, code, msg
 
 
 @api.get('/prompt/user/{user_id}')
-@wrap_response
+@wrap_get_list_response
 def get_list_prompt_by_user(user_id: str, search: str = '', page: int = 0, size: int = 10):
     _filter = {'prompt': re.compile(search, re.IGNORECASE), 'user_id': user_id}
-    result, code, msg = prompt_service.get_list(_filter, page, size)
-    return result, code, msg
+    result, count, code, msg = prompt_service.get_list(_filter, page, size)
+    return result, count, code, msg
 
 
 @api.get('/prompt/{prompt_id}')

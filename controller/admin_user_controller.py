@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from model.user_model import User
 from service.user_service import UserService
 from util.token_util import JWTBearer
-from util.wrap_util import wrap_response
+from util.wrap_util import wrap_get_list_response, wrap_response
 
 api = APIRouter()
 user_service = UserService()
@@ -13,10 +13,10 @@ user_service = UserService()
 
 
 @api.get('/user', dependencies=[Depends(JWTBearer(check_admin=True))])
-@wrap_response
+@wrap_get_list_response
 def get_list_user(page: int = 0, size: int = 100):
-    result, code, msg = user_service.get_list({}, page, size)
-    return result, code, msg
+    result, count, code, msg = user_service.get_list({}, page, size)
+    return result, count, code, msg
 
 
 @api.get('/user/{user_id}', dependencies=[Depends(JWTBearer(check_admin=True))])

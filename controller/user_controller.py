@@ -10,6 +10,10 @@ api = APIRouter()
 user_service = UserService()
 
 
+class UserUpdate(BaseModel):
+    username: str
+
+
 class UserLogin(BaseModel):
     gmail: str
     password: str
@@ -45,10 +49,8 @@ def logout():
 @api.put('/user/{user_id}', dependencies=[Depends(JWTBearer())])
 @wrap_response
 def update_user(user_id: str,
-                username: str = Form(''),
-                image: UploadFile = File(None)):
-    update_item = {'username': username}
-    if image is not None:
-        update_item['image'] = image
-    result, code, msg = user_service.update(user_id, update_item)
+                user: UserUpdate,
+                ):
+    update_item = user.dict()
+    result, code, msg = user_service.update_user(user_id, update_item)
     return result, code, msg

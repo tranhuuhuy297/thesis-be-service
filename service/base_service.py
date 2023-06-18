@@ -63,7 +63,9 @@ class BaseService(object, metaclass=Singleton):
             if deep:
                 items = [self.get_extra_info(item) for item in items]
 
-            return items, code, msg
+            count = self.model.count(_filter)
+
+            return items, count, code, msg
         except Exception as e:
             logger.error(e, exc_info=True)
             return None, 0, Error.ERROR_CODE_GOT_EXCEPTION, e

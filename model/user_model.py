@@ -11,8 +11,8 @@ class User(BaseModel):
     gmail: str
     password: str
     role: Literal['user', 'admin']
-    is_ban: bool
-    is_activate: bool
+    is_ban: bool = None
+    is_activate: bool = None
 
     class Config:
         schema_extra = {

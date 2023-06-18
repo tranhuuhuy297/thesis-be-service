@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from service.image_service import ImageService
 from util.token_util import JWTBearer
-from util.wrap_util import wrap_response
+from util.wrap_util import wrap_get_list_response, wrap_response
 
 api = APIRouter()
 image_service = ImageService()
@@ -12,13 +12,13 @@ MAX_IMAGE = 1
 
 
 @api.get('/image')
-@wrap_response
+@wrap_get_list_response
 def get_list_image(user_id: str = None, page: int = 0, size: int = 20):
     _filter = {}
     if user_id != None:
         _filter['user_id'] = user_id
-    result, code, msg = image_service.get_list(_filter, page, size, deep=True)
-    return result, code, msg
+    result, count, code, msg = image_service.get_list(_filter, page, size, deep=True)
+    return result, count, code, msg
 
 
 @api.delete('/image/{image_id}', dependencies=[Depends(JWTBearer())])

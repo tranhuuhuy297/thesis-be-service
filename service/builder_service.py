@@ -16,7 +16,7 @@ class BuilderValueService(BaseService):
     def build_item(self, item):
         parent = item.get('parent', '')
         name = item.get('name', '')
-        list_parent, _, _ = BuilderTypeService().get_list({'name': parent}, page=0, size=1000)
+        list_parent, _, _, _ = BuilderTypeService().get_list({'name': parent}, page=0, size=1000)
         if len(list_parent) == 0:
             return None, -1, 'parent name not exist'
 
@@ -28,3 +28,9 @@ class BuilderValueService(BaseService):
         item['image_src'] = f'{self.s3_photo.bucket_name}.s3.{self.s3_photo.region_name}.amazonaws.com/builder/{parent}/{name}'
 
         return super().build_item(item)
+
+    def build_update_item(self, update_item):
+        item = {}
+        item['name'] = update_item.get('name', '')
+
+        return item, 0, 'item valid'

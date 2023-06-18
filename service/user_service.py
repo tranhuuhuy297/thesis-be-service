@@ -2,7 +2,7 @@ from model.user_model import UserModel
 from service.base_service import BaseService
 from util.logger_util import logger
 from util.s3_util import S3
-from util.token_util import encode_sha256
+from util.error_util import Error
 
 
 class UserService(BaseService):
@@ -11,19 +11,27 @@ class UserService(BaseService):
         self.s3_photo = S3(bucket_name='image')
 
     def build_update_item(self, update_item):
-        # password = update_item.get('password', '')
-        # password = encode_sha256(password)
+        item = {}
+        item['username'] = update_item.get('username', '')
+        item['gmail'] = update_item.get('gmail', '')
+        item['password'] = update_item.get('password', '')
+        item['role'] = update_item.get('role', '')
 
-        # return {**update_item, 'password': password}, 0, 'validate'
-        username = update_item.get('username', '')
-        if 'image' in update_item:
-            image = update_item.pop('image', None)
-            if image is None:
-                return None, -1, 'invalid image'
-            file_name = f'user/{username}/{image.filename}'
-            if not self.s3_photo.put_object(image.file, file_name):
-                return None, -1, 'upload image fail'
-            image_src = f'{self.s3_photo.bucket_name}.s3.{self.s3_photo.region}.amazonaws.com/{file_name}'
-            update_item['image_src'] = image_src
+        return item, '0', 'item valid'
 
-        return update_item, 0, 'valid'
+    def update_user(self, id, data):
+        try:
+            data.pop('create_time', None)
+            data.pop('update_time', None)
+            item = {}
+            item['username'] = data.get('username', '')
+            item = {k: v for k, v in item.items() if v is not None}
+
+            update_count, code, msg = self.model.update(id, item=item)
+            if update_count:
+                item, _, _ = self.get(id)
+                return item, code, msg
+            return None, -1, 'None of item was updated'
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return None, Error.ERROR_CODE_GOT_EXCEPTION, e

@@ -12,6 +12,15 @@ def wrap_response(func):
     return inner
 
 
+def wrap_get_list_response(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        items, count, code, msg = func(*args, **kwargs)
+        return {'result': items, 'count': count, 'code': code, 'msg': msg}
+
+    return inner
+
+
 def wrap_authorization(func):
     @wraps(func)
     def inner(*args, req: Request, **kwargs):

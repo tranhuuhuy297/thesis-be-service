@@ -1,3 +1,4 @@
+import os
 import re
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
@@ -55,8 +56,9 @@ def create_prompt(prompt: Prompt):
     return result, code, msg
 
 
-@api.get('/semantic-search')
+@api.get('/prompt/semantic-search')
 @wrap_response
 def search_semantic(query: str):
-    result = pinecone.query(query)
-    return result, 0, 'success'
+    user_prompt = pinecone.query(query=query, namespace=os.getenv('PINECONE_NAMESPACE_USER'))
+    crawl_prompt = pinecone.query(query)
+    return user_prompt + crawl_prompt, 0, 'success'

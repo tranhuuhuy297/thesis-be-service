@@ -52,6 +52,7 @@ class ImageService(BaseService):
             sqs.send_message({'id': created_item['id'],
                               'prompt_id': prompt['id'],
                               'user_id': prompt['user_id'],
+                              'image_src': item['image_src'],
                               'prompt': prompt['prompt'],
                               'negative_prompt': prompt.get('negative_prompt', '')})
             return created_item, code, msg

@@ -1,13 +1,14 @@
 import json
+import os
 import pinecone
 from sentence_transformers import SentenceTransformer
 
 # initialize sentence transformer model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-PINECONE_API_KEY = '10a1b9c4-42b2-41fe-a91b-ab9c6f4a0a8a'
-PINECONE_ENV = 'us-west4-gcp'
-PINECONE_INDEX = 'thesis'
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+PINECONE_ENV = os.getenv('PINECONE_ENV')
+PINECONE_INDEX = os.getenv('PINECONE_INDEX')
 
 pinecone.init(
     api_key=PINECONE_API_KEY,

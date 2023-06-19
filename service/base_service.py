@@ -33,7 +33,7 @@ class BaseService(object, metaclass=Singleton):
             item, code, msg = self.build_item(data)
             if item is None:
                 return None, code, msg
-            logger.debug(f'Build item: {msg}\n{item}')
+            logger.info(f'Build item: {msg}\n{item}')
             created_item, code, msg = self.model.create(item)
             return created_item, code, msg
         except Exception as e:

@@ -1,14 +1,12 @@
 from model.user_model import UserModel
 from service.base_service import BaseService
 from util.logger_util import logger
-from util.s3_util import S3
 from util.error_util import Error
 
 
 class UserService(BaseService):
     def __init__(self):
         super().__init__(UserModel())
-        self.s3_photo = S3(bucket_name='image')
 
     def build_update_item(self, update_item):
         item = {}

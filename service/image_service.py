@@ -4,14 +4,15 @@ from service.base_service import BaseService
 from service.prompt_service import PromptService
 from service.upvote_service import UpvoteService
 from service.user_service import UserService
-from util.s3_util import S3
+from util import s3_image, sqs
 from util.time_util import get_time_string
+from util.logger_util import logger
+from util.error_util import Error
 
 
 class ImageService(BaseService):
     def __init__(self):
         super().__init__(ImageModel())
-        self.s3_photo = S3(bucket_name='image')
 
     def build_item(self, item):
         user_id = item.get('user_id', '')
@@ -28,15 +29,35 @@ class ImageService(BaseService):
         if image is None:
             return None, -1, 'invalid image'
         file_name = f'user/{user["gmail"]}/{get_time_string()}/{image.filename}'
-        self.s3_photo.put_object(image.file, file_name)
+        s3_image.put_object(image.file, file_name)
 
-        image_src = f'{self.s3_photo.bucket_name}.s3.{self.s3_photo.region_name}.amazonaws.com/{file_name}'
+        image_src = f'{s3_image.bucket_name}.s3.{s3_image.region_name}.amazonaws.com/{file_name}'
 
         return {
             'user_id': user_id,
             'prompt_id': prompt_id,
             'image_src': image_src,
         }, 0, 'valid'
+
+    def create(self, data):
+        try:
+            item, code, msg = self.build_item(data)
+            if item is None:
+                return None, code, msg
+            logger.info(f'Build item: {msg}\n{item}')
+            created_item, code, msg = self.model.create(item)
+
+            # add to sqs
+            prompt, _, _ = PromptService().get(created_item['prompt_id'], _filter={'user_id': created_item['user_id']})
+            sqs.send_message({'id': created_item['id'],
+                              'prompt_id': prompt['id'],
+                              'user_id': prompt['user_id'],
+                              'prompt': prompt['prompt'],
+                              'negative_prompt': prompt.get('negative_prompt', '')})
+            return created_item, code, msg
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return None, Error.ERROR_CODE_GOT_EXCEPTION, e
 
     def get_extra_info(self, item):
         prompt_id = item.get('prompt_id', '')

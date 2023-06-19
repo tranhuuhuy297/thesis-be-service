@@ -2,14 +2,13 @@ from model.prompt_model import PromptModel
 from model.upvote_model import UpvoteModel
 from service.base_service import BaseService
 from service.user_service import UserService
-from util.s3_util import S3
-from util.time_util import get_time_string
+from util.logger_util import logger
+from util.error_util import Error
 
 
 class PromptService(BaseService):
     def __init__(self):
         super().__init__(PromptModel())
-        self.s3_photo = S3(bucket_name='image')
 
     def build_item(self, item):
         user_id = item.get('user_id', '')

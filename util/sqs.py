@@ -39,8 +39,9 @@ class SQS:
 
         return response["QueueUrl"]
 
-    def send_message(self, message, group_id):
+    def send_message(self, message):
         response = None
+        logger.info(f'Send message {message} to {self.queue_name}')
         try:
             response = self.sqs_client.send_message(
                 QueueUrl=self.get_queue_url(),

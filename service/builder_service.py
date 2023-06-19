@@ -1,6 +1,6 @@
 from model.builder_model import BuilderTypeModel, BuilderValueModel
 from service.base_service import BaseService
-from util.s3_util import S3
+from util import s3_image
 
 
 class BuilderTypeService(BaseService):
@@ -11,7 +11,6 @@ class BuilderTypeService(BaseService):
 class BuilderValueService(BaseService):
     def __init__(self):
         super().__init__(BuilderValueModel())
-        self.s3_photo = S3(bucket_name='image')
 
     def build_item(self, item):
         parent = item.get('parent', '')
@@ -23,9 +22,9 @@ class BuilderValueService(BaseService):
         image = item.pop('image', None)
         if image is None:
             return None, -1, 'invalid image'
-        self.s3_photo.put_object(image.file, f'builder/{parent}/{name}')
+        s3_image.put_object(image.file, f'builder/{parent}/{name}')
 
-        item['image_src'] = f'{self.s3_photo.bucket_name}.s3.{self.s3_photo.region_name}.amazonaws.com/builder/{parent}/{name}'
+        item['image_src'] = f'{s3_image.bucket_name}.s3.{s3_image.region_name}.amazonaws.com/builder/{parent}/{name}'
 
         return super().build_item(item)
 

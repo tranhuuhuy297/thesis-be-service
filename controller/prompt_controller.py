@@ -6,17 +6,16 @@ from pydantic import BaseModel
 from service.prompt_service import PromptService
 from util.token_util import JWTBearer
 from util.wrap_util import wrap_get_list_response, wrap_response
-from util.pinecone import Pinecone
+from util import pinecone
 
 api = APIRouter()
 prompt_service = PromptService()
-pinecone = Pinecone()
 
 
 class Prompt(BaseModel):
     user_id: str
     prompt: str
-    negative_prompt: str = None
+    negative_prompt: str = ''
 
 
 @api.get('/prompt')

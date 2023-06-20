@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from service.image_service import ImageService
 from util.token_util import JWTBearer
 from util import pinecone
-from util.const_util import PINECONE_NAMESPACE_USER
+from util.const_util import PINECONE_NAMESPACE_USER, AWS_CDN
 from util.wrap_util import wrap_get_list_response, wrap_response
 
 api = APIRouter()
@@ -46,4 +46,8 @@ def create_image(user_id: str = Form(...),
 @wrap_response
 def search_semantic(query: str):
     user_prompt = pinecone.query(query=query, namespace=PINECONE_NAMESPACE_USER)
-    return user_prompt, 0, 'success'
+    user_prompt = [{**item, **item['metadata']} for item in user_prompt]
+
+    result = [ImageService().get_extra_info(item) for item in user_prompt]
+
+    return result, 0, 'success'

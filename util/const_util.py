@@ -11,3 +11,5 @@ PINECONE_INDEX = os.getenv('PINECONE_INDEX')
 PINECONE_NAMESPACE_USER = os.getenv('PINECONE_NAMESPACE_USER')
 # openai
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+# sqs
+SQS_NAME = os.getenv('SQS_NAME')

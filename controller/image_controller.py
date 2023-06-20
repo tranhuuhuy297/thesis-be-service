@@ -4,8 +4,9 @@ from pydantic import BaseModel
 from service.image_service import ImageService
 from util.token_util import JWTBearer
 from util import pinecone
-from util.const_util import PINECONE_NAMESPACE_USER, AWS_CDN
+from util.const_util import PINECONE_NAMESPACE_USER
 from util.wrap_util import wrap_get_list_response, wrap_response
+from util import sqs
 
 api = APIRouter()
 image_service = ImageService()
@@ -28,6 +29,11 @@ def get_list_image(user_id: str = None, user_sender_id: str = None, page: int = 
 @wrap_response
 def delete_image(image_id: str):
     result, code, msg = image_service.delete(image_id)
+    if code == 0:
+        sqs.send_message({
+            'action': 'delete',
+            'id': image_id
+        })
     return result, code, msg
 
 
@@ -39,7 +45,6 @@ def create_image(user_id: str = Form(...),
     result, code, msg = image_service.create({
         'user_id': user_id, 'prompt_id': prompt_id, 'image': image
     })
-
     return result, code, msg
 
 

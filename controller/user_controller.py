@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel
 
 from service.prompt_service import PromptService
+from service.image_service import ImageService
 from service.user_service import UserService
 from service.upvote_service import UpvoteService
 from util.token_util import JWTBearer, encode_token
@@ -60,7 +61,8 @@ def update_user(user_id: str,
 @api.get('/user/{user_id}/statistics')
 @wrap_response
 def get_statistics(user_id: str):
-    count_prompt = PromptService().count({'user_id': user_id})
+    # count_prompt = PromptService().count({'user_id': user_id})
+    count_image = ImageService().count({'user_id': user_id})
     count_upvote = UpvoteService().count({'user_receiver_id': user_id})
 
-    return {'count_prompt': count_prompt, 'count_upvote': count_upvote}, 0, 'success'
+    return {'count_image': count_image, 'count_upvote': count_upvote}, 0, 'success'

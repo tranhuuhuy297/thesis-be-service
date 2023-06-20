@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from service.prompt_service import PromptService
 from service.user_service import UserService
+from service.upvote_service import UpvoteService
 from util.token_util import JWTBearer, encode_token
 from util.wrap_util import wrap_response
 
@@ -54,3 +55,12 @@ def update_user(user_id: str,
     update_item = user.dict()
     result, code, msg = user_service.update_user(user_id, update_item)
     return result, code, msg
+
+
+@api.get('/user/{user_id}/statistics')
+@wrap_response
+def get_statistics(user_id: str):
+    count_prompt = PromptService().count({'user_id': user_id})
+    count_upvote = UpvoteService().count({'user_receiver_id': user_id})
+
+    return {'count_prompt': count_prompt, 'count_upvote': count_upvote}, 0, 'success'

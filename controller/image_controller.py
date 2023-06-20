@@ -15,11 +15,12 @@ MAX_IMAGE = 1
 
 @api.get('/image')
 @wrap_get_list_response
-def get_list_image(user_id: str = None, page: int = 0, size: int = 20):
+def get_list_image(user_id: str = None, user_sender_id: str = None, page: int = 0, size: int = 20):
     _filter = {}
     if user_id != None:
         _filter['user_id'] = user_id
-    result, count, code, msg = image_service.get_list(_filter, page, size, deep=True)
+    result, count, code, msg = image_service.get_list(_filter, page, size, deep=False)
+    result = [image_service.get_extra_info({**item, 'user_sender_id': user_sender_id}) for item in result]
     return result, count, code, msg
 
 
@@ -44,10 +45,10 @@ def create_image(user_id: str = Form(...),
 
 @api.get('/image/search/semantic-search')
 @wrap_response
-def search_semantic(query: str):
+def search_semantic(query: str, user_sender_id: str = None):
     user_prompt = pinecone.query(query=query, namespace=PINECONE_NAMESPACE_USER)
     user_prompt = [{**item, **item['metadata']} for item in user_prompt]
 
-    result = [ImageService().get_extra_info(item) for item in user_prompt]
+    result = [image_service.get_extra_info({**item, 'user_sender_id': user_sender_id}) for item in user_prompt]
 
     return result, 0, 'success'

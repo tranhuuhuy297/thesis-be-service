@@ -63,11 +63,20 @@ class ImageService(BaseService):
 
     def get_extra_info(self, item):
         prompt_id = item.get('prompt_id', '')
-        user_id = item.get('user_id', '')
-        prompt, _, _ = PromptService().get(prompt_id, _filter={'user_id': user_id})
-        user, _, _ = UserService().get(user_id)
+        user_sender_id = item.pop('user_sender_id', '')
 
-        upvote, _, _ = UpvoteService().get(None, {'user_id': user_id, 'prompt_id': prompt_id})
+        prompt, _, _ = PromptService().get(prompt_id)
+        if not prompt:
+            return None
+        user_id = prompt['user_id']
+        user, _, _ = UserService().get(user_id)
+        if not user:
+            return None
+
+        upvote, _, _ = UpvoteService().get(None, {'user_sender_id': user_sender_id,
+                                                  'user_receiver_id': user_id,
+                                                  'prompt_id': prompt_id})
+
         count_upvote = UpvoteModel().count({'prompt_id': prompt_id})
 
         return {**item,

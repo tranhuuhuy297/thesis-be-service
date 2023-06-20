@@ -40,6 +40,9 @@ class BaseService(object, metaclass=Singleton):
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_EXCEPTION, e
 
+    def count(self, _filter={}):
+        return self.model.count(_filter)
+
     def get_extra_info(self, item):
         return item
 

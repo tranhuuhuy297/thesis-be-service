@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from service.generate_service import GenerateService

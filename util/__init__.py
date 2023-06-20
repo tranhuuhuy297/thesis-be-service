@@ -5,7 +5,6 @@ from util.s3_util import S3
 
 load_dotenv(dotenv_path='.env')
 
-
 sqs = SQS()
 s3_image = S3(bucket_name='image')
 pinecone = Pinecone()

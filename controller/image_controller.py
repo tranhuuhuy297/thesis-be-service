@@ -1,10 +1,10 @@
-import os
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from pydantic import BaseModel
 
 from service.image_service import ImageService
 from util.token_util import JWTBearer
 from util import pinecone
+from util.const_util import PINECONE_NAMESPACE_USER
 from util.wrap_util import wrap_get_list_response, wrap_response
 
 api = APIRouter()
@@ -42,8 +42,8 @@ def create_image(user_id: str = Form(...),
     return result, code, msg
 
 
-@api.get('/image/semantic-search')
+@api.get('/image/search/semantic-search')
 @wrap_response
 def search_semantic(query: str):
-    user_prompt = pinecone.query(query=query, namespace=os.getenv('PINECONE_NAMESPACE_USER'))
+    user_prompt = pinecone.query(query=query, namespace=PINECONE_NAMESPACE_USER)
     return user_prompt, 0, 'success'

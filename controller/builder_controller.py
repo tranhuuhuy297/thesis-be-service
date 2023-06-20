@@ -52,7 +52,7 @@ def delete_builder_type(builder_type_id: str):
 @wrap_get_list_response
 def get_list_builder_value(builder_type: str = 'Layouts', page: int = 0, size: int = 100):
     _filter = {'parent': builder_type}
-    result, count, code, msg = BuilderValueService().get_list(_filter, page, size)
+    result, count, code, msg = BuilderValueService().get_list(_filter, page, size, deep=True)
     return result, count, code, msg
 
 

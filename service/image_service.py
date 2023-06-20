@@ -8,6 +8,7 @@ from util import s3_image, sqs
 from util.time_util import get_time_string
 from util.logger_util import logger
 from util.error_util import Error
+from util.const_util import AWS_CDN
 
 
 class ImageService(BaseService):
@@ -31,7 +32,7 @@ class ImageService(BaseService):
         file_name = f'user/{user["gmail"]}/{get_time_string()}/{image.filename}'
         s3_image.put_object(image.file, file_name)
 
-        image_src = f'{s3_image.bucket_name}.s3.{s3_image.region_name}.amazonaws.com/{file_name}'
+        image_src = f'/{file_name}'
 
         return {
             'user_id': user_id,
@@ -70,6 +71,7 @@ class ImageService(BaseService):
         count_upvote = UpvoteModel().count({'prompt_id': prompt_id})
 
         return {**item,
+                'image_src': AWS_CDN + item['image_src'],
                 'is_upvote': bool(upvote),
                 'count_upvote': count_upvote,
                 'user_gmail': user.get('gmail', ''),

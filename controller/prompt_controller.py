@@ -56,9 +56,8 @@ def create_prompt(prompt: Prompt):
     return result, code, msg
 
 
-@api.get('/prompt/semantic-search')
+@api.get('/prompt/search/semantic-search')
 @wrap_response
 def search_semantic(query: str):
-    user_prompt = pinecone.query(query=query, namespace=os.getenv('PINECONE_NAMESPACE_USER'))
     crawl_prompt = pinecone.query(query)
-    return user_prompt + crawl_prompt, 0, 'success'
+    return crawl_prompt, 0, 'success'

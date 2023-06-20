@@ -1,6 +1,7 @@
 from model.builder_model import BuilderTypeModel, BuilderValueModel
 from service.base_service import BaseService
 from util import s3_image
+from util.const_util import AWS_CDN
 
 
 class BuilderTypeService(BaseService):
@@ -24,7 +25,7 @@ class BuilderValueService(BaseService):
             return None, -1, 'invalid image'
         s3_image.put_object(image.file, f'builder/{parent}/{name}')
 
-        item['image_src'] = f'{s3_image.bucket_name}.s3.{s3_image.region_name}.amazonaws.com/builder/{parent}/{name}'
+        item['image_src'] = f'/builder/{parent}/{name}'
 
         return super().build_item(item)
 
@@ -33,3 +34,9 @@ class BuilderValueService(BaseService):
         item['name'] = update_item.get('name', '')
 
         return item, 0, 'item valid'
+
+    def get_extra_info(self, item):
+        return {
+            **item,
+            'image_src': AWS_CDN + item['image_src']
+        }

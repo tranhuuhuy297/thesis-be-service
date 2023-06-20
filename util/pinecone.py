@@ -1,10 +1,10 @@
 import pinecone
 from sentence_transformers import SentenceTransformer
 from util.logger_util import logger
-from util.const_util import PINECONE_API_KEY, PINECONE_ENV, PINECONE_INDEX
+from util.const_util import PINECONE_API_KEY, PINECONE_ENV, PINECONE_INDEX, MODEL_NAME
 
 # initialize sentence transformer model
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = SentenceTransformer(MODEL_NAME)
 
 pinecone.init(
     api_key=PINECONE_API_KEY,

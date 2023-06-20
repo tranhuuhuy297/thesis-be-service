@@ -5,6 +5,7 @@ load_dotenv(dotenv_path='.env')
 # aws
 AWS_CDN = os.getenv('AWS_CDN')
 # pinecone
+MODEL_NAME = os.getenv('MODEL_NAME')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_ENV = os.getenv('PINECONE_ENV')
 PINECONE_INDEX = os.getenv('PINECONE_INDEX')

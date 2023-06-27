@@ -29,7 +29,8 @@ class ImageService(BaseService):
         image = item.get('image', None)
         if image is None:
             return None, -1, 'invalid image'
-        file_name = f'user/{user["gmail"]}/{get_time_string()}/{image.filename}'
+
+        file_name = f'user/{user_id}/{get_time_string()}/{image.filename}'
         s3_image.put_object(image.file, file_name)
 
         image_src = f'/{file_name}'

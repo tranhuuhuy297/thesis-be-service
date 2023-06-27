@@ -38,6 +38,8 @@ class ImageService(BaseService):
             'user_id': user_id,
             'prompt_id': prompt_id,
             'image_src': image_src,
+            'prompt': prompt.get('prompt', ''),
+            'negative_prompt': prompt.get('negative_prompt', '')
         }, 0, 'valid'
 
     def create(self, data):
@@ -45,17 +47,18 @@ class ImageService(BaseService):
             item, code, msg = self.build_item(data)
             if item is None:
                 return None, code, msg
+            prompt = item.pop('prompt')
+            negative_prompt = item.pop('negative_prompt')
+
             logger.info(f'Build item: {msg}\n{item}')
             created_item, code, msg = self.model.create(item)
-
             # add to sqs
-            prompt, _, _ = PromptService().get(created_item['prompt_id'], _filter={'user_id': created_item['user_id']})
             sqs.send_message({'id': created_item['id'],
-                              'prompt_id': prompt['id'],
-                              'user_id': prompt['user_id'],
+                              'prompt_id': data['prompt_id'],
+                              'user_id': data['user_id'],
                               'image_src': item['image_src'],
-                              'prompt': prompt['prompt'],
-                              'negative_prompt': prompt.get('negative_prompt', '')})
+                              'prompt': prompt,
+                              'negative_prompt': negative_prompt})
             return created_item, code, msg
         except Exception as e:
             logger.error(e, exc_info=True)

@@ -6,12 +6,9 @@ import jwt
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from util.config_util import jwt_config
 from util.logger_util import logger
 from util.time_util import now
-
-SECRET_KEY = jwt_config['secret_key']
-ALGORITHM = jwt_config['algorithm']
+from util.const_util import JWT_SECRET_KEY, JWT_ALGORITHM
 
 
 def encode_sha256(string):
@@ -26,13 +23,13 @@ def encode_token(result) -> str:
     to_encode = {
         "expire_time": int(round(expire.timestamp())), **result
     }
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     return encoded_jwt, int(expire.timestamp())
 
 
 def decode_token(token: str) -> dict:
     try:
-        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        decoded_token = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], options={'verify_signature': False})
         return decoded_token if decoded_token["expire_time"] >= time.time() else None
     except Exception as e:
         logger.error(e, exc_info=True)

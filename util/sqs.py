@@ -1,10 +1,11 @@
 import boto3
 import json
 from util.logger_util import logger
+from util.const_util import AWS_REGION_NAME
 
 
 class SQS:
-    def __init__(self, region_name='ap-southeast-1', queue_name='thesis', fifo='false'):
+    def __init__(self, region_name=AWS_REGION_NAME, queue_name='thesis', fifo='false'):
         self.region_name = region_name
         self.queue_name = f'{queue_name}.fifo' if fifo == 'true' else queue_name
         self.fifo = fifo

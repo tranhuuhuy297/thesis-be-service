@@ -2,15 +2,26 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env')
-# aws
-AWS_CDN = os.getenv('AWS_CDN')
+
+# mongo
+MONGO_URL = os.getenv('MONGO_URL')
+
 # pinecone
 MODEL_NAME = os.getenv('MODEL_NAME')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 PINECONE_ENV = os.getenv('PINECONE_ENV')
 PINECONE_INDEX = os.getenv('PINECONE_INDEX')
 PINECONE_NAMESPACE_USER = os.getenv('PINECONE_NAMESPACE_USER')
+
 # openai
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-# sqs
-SQS_NAME = os.getenv('SQS_NAME')
+
+# jwt
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
+
+# aws
+AWS_REGION_NAME = os.getenv('AWS_REGION_NAME')
+AWS_CDN = os.getenv('AWS_CDN')
+AWS_S3_PREFIX = os.getenv('AWS_S3_PREFIX')
+AWS_SQS_NAME = os.getenv('AWS_SQS_NAME')

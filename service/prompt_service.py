@@ -24,8 +24,3 @@ class PromptService(BaseService):
             'prompt': prompt,
             'negative_prompt': negative_prompt,
         }, 0, 'valid'
-
-    def get_extra_info(self, item):
-        count_upvote = UpvoteModel().count({'prompt_id': id})
-
-        return {**item, 'count_upvote': count_upvote}

@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from service.prompt_service import PromptService
 from util.token_util import JWTBearer
 from util.wrap_util import wrap_get_list_response, wrap_response
-from util import pinecone
+from util import pinecone, sqs_generate_image
 
 api = APIRouter()
 prompt_service = PromptService()
@@ -51,8 +51,13 @@ def delete_prompt(prompt_id: str):
 
 @api.post('/prompt', dependencies=[Depends(JWTBearer())])
 @wrap_response
-def create_prompt(prompt: Prompt):
+def create_prompt(prompt: Prompt, generate_image: str = False):
     result, code, msg = prompt_service.create(prompt.dict())
+    if generate_image:
+        sqs_generate_image.send_message({
+            'action': 'generate',
+            **prompt.dict()
+        })
     return result, code, msg
 
 

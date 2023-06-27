@@ -2,12 +2,11 @@ import boto3
 from botocore.exceptions import ClientError
 
 from util.logger_util import logger
-
-AWS_S3_PREFIX = 'thh297-s3'
+from util.const_util import AWS_S3_PREFIX, AWS_REGION_NAME
 
 
 class S3:
-    def __init__(self, region_name='ap-southeast-1', bucket_name='raw-data'):
+    def __init__(self, region_name=AWS_REGION_NAME, bucket_name='raw-data'):
         self.region_name = region_name
         self.bucket_name = self.norm_bucket_name(bucket_name)
         self.s3_client = boto3.client('s3', region_name=region_name)

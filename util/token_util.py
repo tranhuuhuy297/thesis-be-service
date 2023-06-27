@@ -29,7 +29,7 @@ def encode_token(result) -> str:
 
 def decode_token(token: str) -> dict:
     try:
-        decoded_token = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        decoded_token = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM], options={'verify_signature': False})
         return decoded_token if decoded_token["expire_time"] >= time.time() else None
     except Exception as e:
         logger.error(e, exc_info=True)

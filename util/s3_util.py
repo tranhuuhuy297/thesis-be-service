@@ -41,3 +41,9 @@ class S3:
             self.s3_client.put_object(Body=object_data, Bucket=self.bucket_name, Key=str(object_name))
         except ClientError as e:
             logger.error(e)
+
+    def upload_file(self, file_name, object_name):
+        try:
+            self.s3_client.upload_file(file_name, self.bucket_name, object_name)
+        except ClientError as e:
+            logger.error(e)

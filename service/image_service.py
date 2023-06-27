@@ -17,9 +17,9 @@ class ImageService(BaseService):
 
     def build_item(self, item):
         user_id = item.get('user_id', '')
-        user, _, _ = UserService().get(user_id)
-        if user is None:
-            return None, -1, 'invalid user'
+        # user, _, _ = UserService().get(user_id)
+        # if user is None:
+        #     return None, -1, 'invalid user'
 
         prompt_id = item.get('prompt_id', '')
         prompt, _, _ = PromptService().get(prompt_id)
@@ -29,15 +29,14 @@ class ImageService(BaseService):
         image = item.get('image', None)
         if image is None:
             return None, -1, 'invalid image'
-        file_name = f'user/{user["gmail"]}/{get_time_string()}/{image.filename}'
+        # file_name = f'user/{user["gmail"]}/{get_time_string()}/{image.filename}'
+        file_name = f'/user/{user_id}/{get_time_string()}/{image.filename}'
         s3_image.put_object(image.file, file_name)
-
-        image_src = f'/{file_name}'
 
         return {
             'user_id': user_id,
             'prompt_id': prompt_id,
-            'image_src': image_src,
+            'image_src': file_name,
             'prompt': prompt.get('prompt', ''),
             'negative_prompt': prompt.get('negative_prompt', '')
         }, 0, 'valid'

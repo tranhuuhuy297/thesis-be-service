@@ -56,7 +56,8 @@ def create_prompt(prompt: Prompt, generate_image: str = False):
     if generate_image:
         sqs_generate_image.send_message({
             'action': 'generate',
-            **prompt.dict()
+            **prompt.dict(),
+            'prompt_id': result['id']
         })
     return result, code, msg
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from service.generate_service import GenerateService
@@ -14,7 +14,7 @@ class Payload(BaseModel):
     hint_text: str
 
 
-@api.post('/generate')
+@api.post('/generate', dependencies=[Depends(JWTBearer())])
 @wrap_response
 def create_prompt(payload: Payload):
     result, code, msg = generate_service.generate(payload.dict())

@@ -61,6 +61,13 @@ def logout():
     pass
 
 
+@api.get('/user/{user_id}')
+@wrap_response
+def get_user(user_id: str):
+    result, code, msg = user_service.get(user_id)
+    return result, code, msg
+
+
 @api.put('/user/{user_id}', dependencies=[Depends(JWTBearer())])
 @wrap_response
 def update_user(user_id: str,

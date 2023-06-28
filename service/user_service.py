@@ -33,3 +33,22 @@ class UserService(BaseService):
         except Exception as e:
             logger.error(e, exc_info=True)
             return None, Error.ERROR_CODE_GOT_EXCEPTION, e
+
+    def signup(self, data):
+        username = data.get('username', None)
+        gmail = data.get('gmail', None)
+        password = data.get('password', None)
+
+        if not (username and gmail and password):
+            return None, -1, 'invalid data'
+
+        result, code, msg = self.model.create({
+            'username': username,
+            'gmail': gmail,
+            'password': password,
+            'role': 'user',
+            'is_ban': False,
+            'is_activate': True
+        })
+
+        return result, code, msg

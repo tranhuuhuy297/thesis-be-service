@@ -16,6 +16,12 @@ class UserUpdate(BaseModel):
     username: str
 
 
+class UserSignUp(BaseModel):
+    username: str
+    gmail: str
+    password: str
+
+
 class UserLogin(BaseModel):
     gmail: str
     password: str
@@ -41,6 +47,13 @@ def login(user: UserLogin):
         return {'access_token': access_token, 'expire_time': expire_time, **result}, code, msg
 
     return None, -1, 'fail'
+
+
+@api.post('/user/signup')
+@wrap_response
+def signup(user: UserSignUp):
+    result, code, msg = user_service.signup(user.dict())
+    return result, code, msg
 
 
 @api.post('/user/logout')

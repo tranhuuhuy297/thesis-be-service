@@ -61,6 +61,6 @@ def search_semantic(query: str, user_sender_id: str = None):
     user_prompt = pinecone.query(query=query, namespace=PINECONE_NAMESPACE_USER)
     user_prompt = [{**item, **item['metadata']} for item in user_prompt]
 
-    result = [image_service.get_extra_info({**item, 'user_sender_id': user_sender_id}) for item in user_prompt]
+    result = [image_service.get_extra_info({**item, 'user_sender_id': user_sender_id}) for item in user_prompt if item.get('score', 0) > 0.5]
 
     return result, 0, 'success'

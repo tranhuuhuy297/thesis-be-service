@@ -11,4 +11,4 @@ prompt = PromptTemplate.from_template(
     Your sentence should be simple, succinct, detail, max in 60 words, use collective nouns. \
     Your picture should has many subjects for detail. \
     You have to give me 10 creative sentences. \
-    Show me result like an JSON")
+    Show me result like an JSON with key is the order number of sentence and value is the sentence")

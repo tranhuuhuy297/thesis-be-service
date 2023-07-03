@@ -4,6 +4,8 @@ from service.user_service import UserService
 from util.logger_util import logger
 from util.langchain import llm, prompt
 
+import json
+
 
 class GenerateService(BaseService):
     def __init__(self):
@@ -16,7 +18,13 @@ class GenerateService(BaseService):
         if user is None:
             return None, -1, 'user not exists'
 
-        list_prompt_gen = llm(prompt.format(subjects=hint_text))
+        result_gen = llm(prompt.format(subjects=hint_text))
+
+        list_prompt_gen = []
+        try:
+            list_prompt_gen = list(json.loads(result_gen).values())
+        except:
+            pass
 
         result = [prompt.strip() for prompt in list_prompt_gen.split('|')]
 

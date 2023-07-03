@@ -2,7 +2,7 @@ from model.image_model import ImageModel
 from service.base_service import BaseService
 from service.prompt_service import PromptService
 from service.user_service import UserService
-from util import s3_image, sqs
+from util import s3_image, pinecone_user_prompt
 from util.time_util import get_time_string
 from util.logger_util import logger
 from util.error_util import Error
@@ -51,13 +51,12 @@ class ImageService(BaseService):
 
             logger.info(f'Build item: {msg}\n{item}')
             created_item, code, msg = self.model.create(item)
-            # add to sqs
-            sqs.send_message({'id': created_item['id'],
-                              'prompt_id': data['prompt_id'],
-                              'user_id': data['user_id'],
-                              'image_src': item['image_src'],
-                              'prompt': prompt,
-                              'negative_prompt': negative_prompt})
+            # insert to pinecone
+            if created_item:
+                pinecone_user_prompt.upsert([created_item['id']], [prompt], [{**created_item,
+                                                                              'prompt': prompt,
+                                                                              'negative_prompt': negative_prompt}])
+
             return created_item, code, msg
         except Exception as e:
             logger.error(e, exc_info=True)

@@ -77,12 +77,7 @@ def search_semantic(query: str):
 
 @api.post('/upsert_after_generate')
 @wrap_response
-def upsert_after_generate(image: Image):
-    data_image = image.dict()
-    user_id = data_image.get('user_id', None)
-    prompt = data_image.get('prompt', None)
-    image_src = data_image.get('image_src', None)
-
+def upsert_after_generate(user_id: str = Form(...), prompt: str = Form(...), image_src: str = Form(...)):
     file_name = compress_image(image_src)
     if file_name is None:
         return None, -1, 'error compress image'

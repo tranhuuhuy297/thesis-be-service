@@ -95,7 +95,7 @@ def write_to_mongo(data):
 
 
 if __name__ == '__main__':
-    channel_id = '1008571102328541215'
+    channel_id = '1008571225309728878'
 
     _id_before = crawl_channel(channel_id)
 

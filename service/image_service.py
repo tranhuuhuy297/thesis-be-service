@@ -5,10 +5,14 @@ from model.image_model import ImageModel
 from service.base_service import BaseService
 from service.user_service import UserService
 from util import s3_image, pinecone_user_prompt
+from util.image_util import compress_image
 from util.time_util import get_time_string
 from util.logger_util import logger
 from util.error_util import Error
 from util.const_util import AWS_CDN
+from PIL import Image as PILImage
+
+from util import pinecone_user_prompt
 
 
 class ImageService(BaseService):
@@ -52,9 +56,12 @@ class ImageService(BaseService):
             created_item, code, msg = self.model.create(item)
             # insert to pinecone
             if created_item:
-                pinecone_user_prompt.upsert([created_item['id']],
-                                            [prompt],
-                                            [created_item])
+                _, count, _, _ = self.get_list(
+                    _filter={'prompt': {'$regex': f'^{prompt}$', '$options': 'i'}})
+                if count == 1:  # only add to pinecone when prompt unique
+                    pinecone_user_prompt.upsert([created_item['id']],
+                                                [prompt],
+                                                [created_item])
 
             return created_item, code, msg
         except Exception as e:
@@ -84,3 +91,42 @@ class ImageService(BaseService):
     def get_extra_info(self, item):
         return {**item,
                 'image_src': AWS_CDN + item['image_src']}
+
+    def upsert_after_generate(self, data):
+        user_id = data['user_id']
+        prompt = data['prompt']
+        image_src = data['image_src']
+
+        file_name = compress_image(image_src)
+        if file_name is None:
+            return None, -1, 'error compress image'
+
+        data = {
+            'user_id': user_id,
+            'prompt': prompt,
+            'image': {
+                'file': PILImage.open(file_name),
+                'filename': file_name
+            }
+        }
+        logger.info(f'upsert after generate {data}')
+
+        result, code, msg = self.create(data)
+
+        return result, code, msg
+
+    def extend_delete(self, ids):
+        pinecone_user_prompt.delete(ids)
+        from service.upvote_service import UpvoteService
+
+        for image_id in ids:
+            UpvoteService().delete_many(_filter={'image_id': image_id})
+        return True, 0, 'success'
+
+    def upload(self, image):
+        file_name = f'upload/{get_time_string()}/{str(uuid.uuid1())}'
+        s3_image.put_object(image.file, file_name)
+
+        image_src = f'/{file_name}'
+
+        return {'image_src': AWS_CDN + image_src}, 0, 'success'

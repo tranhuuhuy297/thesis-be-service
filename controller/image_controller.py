@@ -1,13 +1,11 @@
 import os
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from pydantic import BaseModel
-from util import pinecone_user_prompt
-from PIL import Image as PILImage
+from util import pinecone_user_prompt, sqs_generate_image
 
-from util.logger_util import logger
+from pydantic import BaseModel
 
 from service.image_service import ImageService
-from util.image_util import compress_image
 from util.token_util import JWTBearer
 from util.wrap_util import wrap_authorization, wrap_get_list_response, wrap_response
 
@@ -19,11 +17,14 @@ MAX_IMAGE = 1
 
 @api.get('/image')
 @wrap_get_list_response
-def get_list_image(user_id: str = None, page: int = 0, size: int = 20):
+def get_list_image(query: str = None, user_id: str = None, page: int = 0, size: int = 20):
     _filter = {}
     if user_id != None:
         _filter['user_id'] = user_id
-    result, count, code, msg = image_service.get_list(_filter, page, size, deep=False)
+    if query != None:
+        _filter['prompt'] = {'$regex': f'^{query}$', '$options': 'i'}
+    result, count, code, msg = image_service.get_list(
+        _filter, page, size, deep=False)
     result = [image_service.get_extra_info({**item}) for item in result]
     return result, count, code, msg
 
@@ -33,8 +34,6 @@ def get_list_image(user_id: str = None, page: int = 0, size: int = 20):
 @wrap_authorization
 def delete_image(req: Request,  image_id: str, user_id: str):
     _id, code, msg = image_service.delete(image_id)
-    if _id is not None:
-        pinecone_user_prompt.delete([_id])
     return _id, code, msg
 
 
@@ -64,11 +63,12 @@ def get_image(image_id: str):
 @api.get('/image/search/semantic-search')
 @wrap_response
 def search_semantic(query: str):
-    user_prompt = pinecone_user_prompt.query(query=query)
-    user_prompt = [{**item, **item['metadata']} for item in user_prompt]
+    user_prompt = pinecone_user_prompt.query(query=query, top_k=300)
+    result = [{**item, **item['metadata']} for item in user_prompt]
 
-    # only get result which has score > 0.5
-    result = [image_service.get_extra_info({**item}) for item in user_prompt]
+    # # only get result which has score > 0.5
+    result = [image_service.get_extra_info(
+        {**item}) for item in result]
 
     return result, 0, 'success'
 
@@ -82,25 +82,31 @@ class ImageGenerate(BaseModel):
 @api.post('/upsert_after_generate')
 @wrap_response
 def upsert_after_generate(image: ImageGenerate):
-    data = image.dict()
-    user_id = data['user_id']
-    prompt = data['prompt']
-    image_src = data['image_src']
-
-    file_name = compress_image(image_src)
-    if file_name is None:
-        return None, -1, 'error compress image'
-
-    data = {
-        'user_id': user_id,
-        'prompt': prompt,
-        'image': {
-            'file': PILImage.open(file_name),
-            'filename': file_name
-        }
-    }
-    logger.info(f'upsert after generate {data}')
-
-    result, code, msg = image_service.create(data)
-
+    result, code, msg = image_service.upsert_after_generate(image.dict())
     return result, code, msg
+
+
+@api.post('/upload')
+@wrap_response
+def upload_image(image: UploadFile = File(...)):
+    result, code, msg = image_service.upload(image)
+    return result, code, msg
+
+
+class Image(BaseModel):
+    user_id: str
+    prompt: str
+
+
+@api.post('/generate')
+@wrap_response
+def generate(image: Image):
+    response = sqs_generate_image.send_message({
+        'action': 'generate',
+        **image.dict()
+    })
+
+    if response is None:
+        return None, -1, 'fail'
+
+    return {}, 0, 'success'

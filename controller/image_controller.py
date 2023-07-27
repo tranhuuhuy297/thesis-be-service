@@ -65,18 +65,8 @@ def search_semantic(query: str):
     user_prompt = [{**item, **item['metadata']} for item in user_prompt]
 
     # only get result which has score > 0.5
-    semantic_search = [image_service.get_extra_info(
+    result = [image_service.get_extra_info(
         {**item}) for item in user_prompt]
-
-    semantic_search_id = [image['id'] for image in semantic_search]
-
-    full_text_search, _, _, _ = image_service.get_list(
-        _filter={"$text": {"$search": query}}, page=0, size=1000, deep=True)
-
-    result = semantic_search
-    for i in full_text_search:
-        if i['id'] not in semantic_search_id:
-            result.append(i)
 
     return result, 0, 'success'
 
